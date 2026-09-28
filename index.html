@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0E5A4C">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Carnet PCA">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230E5A4C'/%3E%3Ctext x='32' y='42' font-size='26' font-family='Georgia' font-weight='700' fill='white' text-anchor='middle'%3EPCA%3C/text%3E%3C/svg%3E">
+<link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-192.png">
+<title>Carnet du PCA</title>
+<style>
+html{-webkit-text-size-adjust:100%}
+:root{
+  --bg:#F4F6F4; --surface:#FFFFFF; --surface2:#EDF1EE; --ink:#18221F; --muted:#5B6964; --line:#D9E0DC;
+  --accent:#0E5A4C; --accent-ink:#FFFFFF; --accent-soft:#DCEDE8;
+  --late:#B3261E; --late-soft:#F8E1DF; --soon:#9A6212; --soon-soft:#F6EAD5; --ok:#2E7D4F;
+  --claude:#5A4AA8; --claude-soft:#E8E5F6;
+  --display:Georgia,"Times New Roman",serif; --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; --mono:ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme:dark;
+  --bg:#101614; --surface:#18201D; --surface2:#1F2925; --ink:#E4EBE8; --muted:#95A49E; --line:#2C3833;
+  --accent:#4DB39A; --accent-ink:#0B1311; --accent-soft:#1D3A33;
+  --late:#F08A80; --late-soft:#3A1F1C; --soon:#E0AE5C; --soon-soft:#3A2E1A; --ok:#6CC390;
+  --claude:#ADA2F0; --claude-soft:#2A2645;
+}}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#101614; --surface:#18201D; --surface2:#1F2925; --ink:#E4EBE8; --muted:#95A49E; --line:#2C3833;
+  --accent:#4DB39A; --accent-ink:#0B1311; --accent-soft:#1D3A33;
+  --late:#F08A80; --late-soft:#3A1F1C; --soon:#E0AE5C; --soon-soft:#3A2E1A; --ok:#6CC390;
+  --claude:#ADA2F0; --claude-soft:#2A2645;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:20px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:10px}
+h1{font-family:var(--display);font-size:26px;margin:0;letter-spacing:-.01em}
+.today{font-family:var(--mono);font-size:12.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.counts{display:flex;gap:8px;flex-wrap:wrap}
+.count{font-size:13px;padding:3px 10px;border-radius:999px;background:var(--surface2);color:var(--muted);font-variant-numeric:tabular-nums}
+.count b{color:var(--ink)}
+.count.late b{color:var(--late)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line)}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:8px 12px;font:600 15px var(--body);color:var(--muted);cursor:pointer;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-color:var(--accent)}
+.add{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:10px}
+.add .row{display:flex;gap:8px;flex-wrap:wrap}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px;padding:8px 10px;min-width:0}
+textarea{resize:vertical;min-height:60px;width:100%}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+#newTitle,#memoText{flex:1 1 260px}
+.btn{font:600 14px var(--body);border-radius:7px;padding:8px 14px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--late);border-color:var(--late)}
+.btn.small{padding:4px 10px;font-size:13px}
+.filters{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.chip{font:600 13px var(--body);padding:4px 11px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.spacer{flex:1}
+.toggle{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;cursor:pointer}
+.group{display:flex;flex-direction:column;gap:8px}
+.group h2{font:700 12px var(--body);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:6px 0 0;display:flex;gap:8px;align-items:center}
+.group h2.late{color:var(--late)} .group h2.soon{color:var(--soon)}
+.group h2 .n{font-family:var(--mono);font-weight:500}
+.task{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 12px 12px 14px;display:grid;grid-template-columns:auto 1fr;gap:4px 12px;position:relative}
+.task.p-haute{box-shadow:inset 3px 0 0 var(--late)}
+.task.done{opacity:.6}
+.task.done .title{text-decoration:line-through}
+.check{width:22px;height:22px;margin-top:1px;accent-color:var(--accent);cursor:pointer}
+.main{min-width:0;display:flex;flex-direction:column;gap:6px}
+.title{font-weight:600;font-size:16px;cursor:pointer;overflow-wrap:anywhere}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--muted)}
+.pill{padding:1px 8px;border-radius:999px;background:var(--surface2);font-weight:600}
+.pill.dom{background:var(--accent-soft);color:var(--accent)}
+.pill.claude{background:var(--claude-soft);color:var(--claude)}
+.pill.late{background:var(--late-soft);color:var(--late)}
+.pill.soon{background:var(--soon-soft);color:var(--soon)}
+.mono{font-family:var(--mono);font-size:12px}
+.subs{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-direction:column;gap:4px}
+.subs li{display:flex;gap:8px;align-items:flex-start;font-size:14px}
+.subs input{width:16px;height:16px;margin-top:2px;accent-color:var(--accent)}
+.subs li.ok span{text-decoration:line-through;color:var(--muted)}
+.notes{font-size:14px;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere}
+.editor{grid-column:1/-1;border-top:1px dashed var(--line);margin-top:8px;padding-top:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.editor label{display:flex;flex-direction:column;gap:4px;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.editor .full{grid-column:1/-1}
+.editor .actions{grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap}
+.memo{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.memo .txt{flex:1;white-space:pre-wrap;overflow-wrap:anywhere}
+.memo .meta{margin-top:6px}
+.empty{color:var(--muted);font-size:14px;padding:14px;text-align:center;border:1px dashed var(--line);border-radius:10px}
+.banner{font-size:13px;padding:8px 12px;border-radius:8px;background:var(--soon-soft);color:var(--soon)}
+.x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:2px 6px}
+@media (max-width:480px){h1{font-size:22px}}
+</style>
+</head><body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="today" id="todayLabel"></div>
+      <h1>Carnet du PCA</h1>
+    </div>
+    <div class="counts" id="counts"></div>
+  </header>
+  <div class="banner" id="banner" hidden></div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="tabT" aria-selected="true">Tâches</button>
+    <button class="tab" role="tab" id="tabM" aria-selected="false">À retenir</button>
+  </div>
+
+  <section id="paneT">
+    <div class="group" style="gap:14px">
+      <form class="add" id="addForm" autocomplete="off">
+        <div class="row">
+          <input id="newTitle" placeholder="Nouvelle tâche, ex. Retrait Afriland pour reversement…" required>
+          <button class="btn primary" type="submit">Ajouter</button>
+        </div>
+        <div class="row">
+          <input type="date" id="newDate" aria-label="Date">
+          <input type="time" id="newTime" aria-label="Heure">
+          <select id="newDom" aria-label="Domaine"></select>
+          <select id="newPrio" aria-label="Priorité"><option value="normale">Priorité normale</option><option value="haute">Priorité haute</option><option value="basse">Priorité basse</option></select>
+          <select id="newResp" aria-label="Responsable"><option value="Moi">Moi</option><option value="Claude">Claude</option><option value="Autre">Autre</option></select>
+        </div>
+      </form>
+      <div class="filters" id="filters"></div>
+      <div id="list" class="group" style="gap:16px"></div>
+    </div>
+  </section>
+
+  <section id="paneM" hidden>
+    <div class="group" style="gap:14px">
+      <form class="add" id="memoForm" autocomplete="off">
+        <div class="row">
+          <input id="memoText" placeholder="À retenir, ex. Montant convenu avec le fournisseur…" required>
+          <select id="memoDom" aria-label="Domaine"></select>
+          <button class="btn primary" type="submit">Noter</button>
+        </div>
+      </form>
+      <div id="memos" class="group"></div>
+    </div>
+  </section>
+
+  <div class="add" style="margin-top:8px">
+    <div style="font-weight:600">Sauvegarde</div>
+    <div class="notes">Tout est enregistré dans ce téléphone, sans internet. Exportez de temps en temps une copie pour ne rien perdre si vous changez de téléphone ou videz le navigateur.</div>
+    <div class="row"><button class="btn" id="btnExp" type="button">Exporter une sauvegarde</button><label class="btn" style="display:inline-block">Restaurer une sauvegarde<input type="file" id="fileImp" accept=".json,application/json" hidden></label></div>
+  </div>
+</div>
+
+<script>
+const DOMAINES=["APLUSFINANCES","Entraide","VISA LONGCHAMP","Gestion PME","Personnel"];
+const MOIS=["janv.","févr.","mars","avr.","mai","juin","juil.","août","sept.","oct.","nov.","déc."];
+const JOURS=["dimanche","lundi","mardi","mercredi","jeudi","vendredi","samedi"];
+let tasks=[],memos=[],openId=null,filterDom="Tous",showDone=false,db=null,local=false,confirmDel=null;
+
+const $=id=>document.getElementById(id);
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const todayISO=()=>iso(new Date());
+const addDays=(s,n)=>{const d=new Date(s+"T12:00");d.setDate(d.getDate()+n);return iso(d)};
+const fmtDate=s=>{if(!s)return"";const d=new Date(s+"T12:00");return JOURS[d.getDay()]+" "+d.getDate()+" "+MOIS[d.getMonth()]};
+const fcfa=n=>new Intl.NumberFormat("fr-FR").format(n)+" FCFA";
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function fillSelect(el,withAll){el.innerHTML=DOMAINES.map(d=>`<option>${d}</option>`).join("")}
+fillSelect($("newDom"));fillSelect($("memoDom"));
+$("newDate").value=addDays(todayISO(),1);
+{const d=new Date();$("todayLabel").textContent=JOURS[d.getDay()]+" "+d.getDate()+" "+MOIS[d.getMonth()]+" "+d.getFullYear()}
+
+/* ---------- stockage ---------- */
+function lsLoad(k){try{return JSON.parse(localStorage.getItem(k)||"[]")}catch(e){return[]}}
+function lsSave(){try{localStorage.setItem("carnet_t",JSON.stringify(tasks));localStorage.setItem("carnet_m",JSON.stringify(memos))}catch(e){}}
+async function saveTask(t){
+  const {id,...body}=t;
+  if(db){try{await db.collection("taches").doc(id).set(body)}catch(e){showErr(e)}}
+  else{const i=tasks.findIndex(x=>x.id===id);if(i<0)tasks.push(t);else tasks[i]=t;lsSave();render()}
+}
+async function delTask(id){
+  if(db){try{await db.collection("taches").doc(id).delete()}catch(e){showErr(e)}}
+  else{tasks=tasks.filter(t=>t.id!==id);lsSave();render()}
+}
+async function saveMemo(m){const{id,...b}=m;if(db){try{await db.collection("memos").doc(id).set(b)}catch(e){showErr(e)}}else{memos.push(m);lsSave();renderMemos()}}
+async function delMemo(id){if(db){try{await db.collection("memos").doc(id).delete()}catch(e){showErr(e)}}else{memos=memos.filter(m=>m.id!==id);lsSave();renderMemos()}}
+const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+function showErr(e){const b=$("banner");b.hidden=false;b.textContent=e&&e.code==="invalid_argument"?"Vous pouvez consulter ce carnet, mais pas le modifier.":"Enregistrement impossible pour le moment. Réessayez dans un instant."}
+
+/* ---------- rendu tâches ---------- */
+function bucket(t){
+  const td=todayISO();
+  if(t.fait)return"done";
+  if(!t.date)return"nodate";
+  if(t.date<td)return"late";
+  if(t.date===td)return"today";
+  if(t.date===addDays(td,1))return"tomorrow";
+  if(t.date<=addDays(td,7))return"week";
+  return"later";
+}
+const GROUPS=[["late","En retard","late"],["today","Aujourd'hui","soon"],["tomorrow","Demain",""],["week","Cette semaine",""],["later","Plus tard",""],["nodate","Sans date",""],["done","Terminées",""]];
+const PR={haute:0,normale:1,basse:2};
+
+function renderFilters(){
+  const counts={};tasks.filter(t=>!t.fait).forEach(t=>counts[t.domaine]=(counts[t.domaine]||0)+1);
+  $("filters").innerHTML=["Tous",...DOMAINES].map(d=>`<button class="chip" data-dom="${d}" aria-pressed="${filterDom===d}">${d}${d!=="Tous"&&counts[d]?" · "+counts[d]:""}</button>`).join("")+
+   `<span class="spacer"></span><label class="toggle"><input type="checkbox" id="showDone" ${showDone?"checked":""}> Afficher les terminées</label>`;
+}
+function taskHTML(t){
+  const b=bucket(t);
+  const subs=t.sous||[];const nOk=subs.filter(s=>s.fait).length;
+  const datePill=t.date?`<span class="pill ${b==="late"?"late":b==="today"?"soon":""} mono">${fmtDate(t.date)}${t.heure?" · "+t.heure:""}</span>`:"";
+  let h=`<article class="task p-${t.priorite||"normale"} ${t.fait?"done":""}" data-id="${t.id}">
+   <input type="checkbox" class="check" data-act="toggle" ${t.fait?"checked":""} aria-label="Marquer comme fait">
+   <div class="main">
+     <div class="title" data-act="open">${esc(t.titre)}</div>
+     <div class="meta">${datePill}<span class="pill dom">${esc(t.domaine)}</span>${t.responsable==="Claude"?'<span class="pill claude">Claude</span>':""}${t.priorite==="haute"?'<span class="pill late">Priorité haute</span>':""}${t.montant?`<span class="mono">${fcfa(t.montant)}</span>`:""}${subs.length?`<span class="mono">${nOk}/${subs.length}</span>`:""}</div>`;
+  if(subs.length)h+=`<ul class="subs">${subs.map((s,i)=>`<li class="${s.fait?"ok":""}"><input type="checkbox" data-act="sub" data-i="${i}" ${s.fait?"checked":""} id="s-${t.id}-${i}"><label for="s-${t.id}-${i}"><span>${esc(s.t)}</span></label></li>`).join("")}</ul>`;
+  if(t.notes&&openId!==t.id)h+=`<div class="notes">${esc(t.notes)}</div>`;
+  h+=`</div>`;
+  if(openId===t.id){
+    h+=`<div class="editor">
+      <label class="full">Tâche<input id="e-titre" value="${esc(t.titre)}"></label>
+      <label>Date<input type="date" id="e-date" value="${t.date||""}"></label>
+      <label>Heure<input type="time" id="e-heure" value="${t.heure||""}"></label>
+      <label>Domaine<select id="e-dom">${DOMAINES.map(d=>`<option ${d===t.domaine?"selected":""}>${d}</option>`).join("")}</select></label>
+      <label>Priorité<select id="e-prio">${["haute","normale","basse"].map(p=>`<option value="${p}" ${p===(t.priorite||"normale")?"selected":""}>${p}</option>`).join("")}</select></label>
+      <label>Responsable<select id="e-resp">${["Moi","Claude","Autre"].map(p=>`<option ${p===t.responsable?"selected":""}>${p}</option>`).join("")}</select></label>
+      <label>Montant (FCFA)<input type="number" min="0" step="1000" id="e-montant" value="${t.montant||""}"></label>
+      <label class="full">Étapes (une par ligne)<textarea id="e-subs">${esc(subs.map(s=>s.t).join("\n"))}</textarea></label>
+      <label class="full">Notes<textarea id="e-notes">${esc(t.notes||"")}</textarea></label>
+      <div class="actions"><button class="btn primary" data-act="save">Enregistrer</button><button class="btn" data-act="close">Fermer</button><span class="spacer"></span>
+      ${confirmDel===t.id?'<button class="btn danger" data-act="delyes">Confirmer la suppression</button><button class="btn" data-act="delno">Annuler</button>':'<button class="btn danger" data-act="del">Supprimer</button>'}</div>
+    </div>`;
+  }
+  return h+`</article>`;
+}
+function render(){
+  renderFilters();
+  const open=tasks.filter(t=>!t.fait);
+  const late=open.filter(t=>bucket(t)==="late").length,tdy=open.filter(t=>bucket(t)==="today").length,tmw=open.filter(t=>bucket(t)==="tomorrow").length;
+  $("counts").innerHTML=`<span class="count late">En retard <b>${late}</b></span><span class="count">Aujourd'hui <b>${tdy}</b></span><span class="count">Demain <b>${tmw}</b></span><span class="count">À faire <b>${open.length}</b></span>`;
+  let list=tasks.filter(t=>filterDom==="Tous"||t.domaine===filterDom);
+  if(!showDone)list=list.filter(t=>!t.fait);
+  const sorted=list.slice().sort((a,b)=>(a.date||"9999").localeCompare(b.date||"9999")||(a.heure||"99").localeCompare(b.heure||"99")||(PR[a.priorite]??1)-(PR[b.priorite]??1));
+  let html="";
+  for(const [k,label,cls] of GROUPS){
+    const items=sorted.filter(t=>bucket(t)===k);if(!items.length)continue;
+    if(k==="done")items.sort((a,b)=>(b.faitLe||"").localeCompare(a.faitLe||""));
+    html+=`<div class="group"><h2 class="${cls}">${label} <span class="n">${items.length}</span></h2>${items.map(taskHTML).join("")}</div>`;
+  }
+  $("list").innerHTML=html||`<div class="empty">Rien à faire ici. Ajoutez une tâche ci-dessus.</div>`;
+}
+$("list").addEventListener("click",async e=>{
+  const el=e.target.closest("[data-act]");if(!el)return;
+  const art=el.closest(".task");const t=tasks.find(x=>x.id===art.dataset.id);if(!t)return;
+  const act=el.dataset.act;const c=JSON.parse(JSON.stringify(t));
+  if(act==="toggle"){c.fait=!c.fait;c.faitLe=c.fait?new Date().toISOString():null;await saveTask(c)}
+  else if(act==="sub"){const i=+el.dataset.i;c.sous[i].fait=!c.sous[i].fait;await saveTask(c)}
+  else if(act==="open"){openId=openId===t.id?null:t.id;confirmDel=null;render()}
+  else if(act==="close"){openId=null;confirmDel=null;render()}
+  else if(act==="del"){confirmDel=t.id;render()}
+  else if(act==="delno"){confirmDel=null;render()}
+  else if(act==="delyes"){openId=null;confirmDel=null;await delTask(t.id)}
+  else if(act==="save"){
+    const old=c.sous||[];
+    c.titre=$("e-titre").value.trim()||c.titre;c.date=$("e-date").value;c.heure=$("e-heure").value;c.domaine=$("e-dom").value;
+    c.priorite=$("e-prio").value;c.responsable=$("e-resp").value;c.montant=+$("e-montant").value||null;c.notes=$("e-notes").value.trim();
+    c.sous=$("e-subs").value.split("\n").map(s=>s.trim()).filter(Boolean).map(s=>({t:s,fait:(old.find(o=>o.t===s)||{}).fait||false}));
+    openId=null;await saveTask(c);
+  }
+});
+$("filters").addEventListener("click",e=>{const b=e.target.closest("[data-dom]");if(b){filterDom=b.dataset.dom;render()}});
+$("filters").addEventListener("change",e=>{if(e.target.id==="showDone"){showDone=e.target.checked;render()}});
+$("addForm").addEventListener("submit",async e=>{
+  e.preventDefault();const titre=$("newTitle").value.trim();if(!titre)return;
+  await saveTask({id:newId("t"),titre,date:$("newDate").value,heure:$("newTime").value,domaine:$("newDom").value,priorite:$("newPrio").value,responsable:$("newResp").value,notes:"",montant:null,sous:[],fait:false,faitLe:null,cree:new Date().toISOString()});
+  $("newTitle").value="";$("newTime").value="";$("newTitle").focus();
+});
+
+/* ---------- mémos ---------- */
+function renderMemos(){
+  const s=memos.slice().sort((a,b)=>(b.cree||"").localeCompare(a.cree||""));
+  $("memos").innerHTML=s.length?s.map(m=>`<div class="memo" data-id="${m.id}"><div class="txt">${esc(m.texte)}<div class="meta"><span class="pill dom">${esc(m.domaine)}</span><span class="mono">${m.cree?fmtDate(m.cree.slice(0,10)):""}</span></div></div><button class="x" data-del="${m.id}" aria-label="Supprimer">×</button></div>`).join(""):`<div class="empty">Notez ici ce que vous devez garder en tête : décisions, montants convenus, consignes.</div>`;
+}
+$("memos").addEventListener("click",e=>{const b=e.target.closest("[data-del]");if(b)delMemo(b.dataset.del)});
+$("memoForm").addEventListener("submit",async e=>{e.preventDefault();const t=$("memoText").value.trim();if(!t)return;await saveMemo({id:newId("m"),texte:t,domaine:$("memoDom").value,cree:new Date().toISOString()});$("memoText").value=""});
+
+/* ---------- onglets ---------- */
+function setTab(m){$("tabT").setAttribute("aria-selected",!m);$("tabM").setAttribute("aria-selected",m);$("paneT").hidden=m;$("paneM").hidden=!m;try{localStorage.setItem("carnet_tab",m?"m":"t")}catch(e){}}
+$("tabT").onclick=()=>setTab(false);$("tabM").onclick=()=>setTab(true);
+try{if(localStorage.getItem("carnet_tab")==="m")setTab(true)}catch(e){}
+
+/* ---------- démarrage (hors ligne) ---------- */
+const SEED=[{"id": "t-retraits-aplus", "titre": "Retraits AFG Bank et Afriland pour reversement à APLUSFINANCES", "date": "2026-09-28", "heure": "", "domaine": "APLUSFINANCES", "priorite": "haute", "responsable": "Moi", "notes": "", "montant": null, "sous": [{"t": "Retrait AFG Bank", "fait": false}, {"t": "Retrait Afriland First Bank", "fait": false}, {"t": "Reverser les fonds à APLUSFINANCES", "fait": false}], "fait": false, "faitLe": null, "cree": "2026-09-27T17:40:00Z"}, {"id": "t-comptes-entraide", "titre": "Ouvrir les comptes bancaires de l'Entraide du 27", "date": "2026-09-28", "heure": "", "domaine": "Entraide", "priorite": "haute", "responsable": "Moi", "notes": "", "montant": null, "sous": [{"t": "La Régionale", "fait": false}, {"t": "Afriland First Bank", "fait": false}, {"t": "Access Bank", "fait": false}, {"t": "Golden Bank", "fait": false}], "fait": false, "faitLe": null, "cree": "2026-09-27T17:40:00Z"}, {"id": "tmuk1s0nj4u9f", "titre": "Enregistrement des factures sonecomx", "date": "2026-09-28", "heure": "", "domaine": "APLUSFINANCES", "priorite": "normale", "responsable": "Moi", "notes": "", "montant": null, "sous": [], "fait": false, "faitLe": null, "cree": "2026-09-27T16:43:10Z"}, {"id": "tmuk22jkjb8po", "titre": "Rendez-vous avec Messi et Essono à 20h demain", "date": "2026-09-28", "heure": "20:00", "domaine": "APLUSFINANCES", "priorite": "normale", "responsable": "Moi", "notes": "", "montant": null, "sous": [], "fait": false, "faitLe": null, "cree": "2026-09-27T16:51:21Z"}, {"id": "t-gestion-pme", "titre": "Terminer la suite de gestion PME", "date": "", "heure": "", "domaine": "Gestion PME", "priorite": "normale", "responsable": "Claude", "notes": "Hors ligne sur un poste et en réseau sur plusieurs postes. Nom et logo de l'entreprise configurables, VISA LONGCHAMP SARL en premier client.", "montant": null, "sous": [{"t": "Pack Paie & Personnel", "fait": false}, {"t": "Pack Finance & Trésorerie", "fait": false}, {"t": "Pack Achats, Stock & Chantiers", "fait": false}, {"t": "Pack Commercial & Administratif", "fait": false}, {"t": "Application tout-en-un", "fait": false}], "fait": false, "faitLe": null, "cree": "2026-09-27T17:40:00Z"}];
+let lsOK=true;try{localStorage.setItem("_t","1");localStorage.removeItem("_t")}catch(e){lsOK=false}
+if(lsOK&&localStorage.getItem("carnet_init")===null){localStorage.setItem("carnet_t",JSON.stringify(SEED));localStorage.setItem("carnet_m","[]");localStorage.setItem("carnet_init","1")}
+tasks=lsOK?lsLoad("carnet_t"):SEED.slice();memos=lsOK?lsLoad("carnet_m"):[];
+if(!lsOK){const b=$("banner");b.hidden=false;b.textContent="Ce navigateur bloque l'enregistrement : vos ajouts seront perdus à la fermeture. Ouvrez le fichier avec Chrome."}
+render();renderMemos();
+$("btnExp").onclick=()=>{const data=JSON.stringify({app:"carnet-pca",v:1,exporte:new Date().toISOString(),taches:tasks,memos},null,1);
+  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));a.download="carnet-pca-"+todayISO()+".json";document.body.appendChild(a);a.click();a.remove()};
+$("fileImp").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!Array.isArray(d.taches))throw 0;tasks=d.taches;memos=d.memos||[];lsSave();render();renderMemos();const b=$("banner");b.hidden=false;b.textContent="Sauvegarde restaurée : "+tasks.length+" tâches, "+memos.length+" notes."}catch(x){const b=$("banner");b.hidden=false;b.textContent="Ce fichier n'est pas une sauvegarde du Carnet."}};r.readAsText(f);e.target.value=""};
+if("serviceWorker"in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script>
+
+</body></html>
